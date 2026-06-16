@@ -1,0 +1,64 @@
+name: Test basic markdown string conversion
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Debug environment
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "PWD: $(pwd)"
+          node --version || true
+          ls -la "$GITHUB_WORKSPACE" | head -20
+      - id: action
+        uses: .
+        with:
+          markdown: |
+            # Hello World
+
+            This is a **test**.
+          output: /tmp/test-basic-output.html
+          github-corners: "https://github.com/jaywcjlove/markdown-to-html-cli"
+      - name: Assert html output contains heading
+        env:
+          HTML: ${{ steps.action.outputs.html }}
+        run: |
+          echo "html length: ${#HTML}"
+          echo "html snippet: $(echo "$HTML" | head -5)"
+          if [ -z "$HTML" ]; then
+            echo "FAIL: html output is empty"
+            exit 1
+          fi
+          if ! echo "$HTML" | grep -q "<h1"; then
+            echo "FAIL: expected <h1 tag in html output"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert markdown output is set
+        env:
+          MARKDOWN: ${{ steps.action.outputs.markdown }}
+        run: |
+          echo "markdown: $MARKDOWN"
+          if [ -z "$MARKDOWN" ]; then
+            echo "FAIL: markdown output is empty"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert output file was created
+        run: |
+          if [ ! -f "/tmp/test-basic-output.html" ]; then
+            echo "FAIL: output file /tmp/test-basic-output.html was not created"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert output file contains h1 tag
+        run: |
+          CONTENT=$(cat /tmp/test-basic-output.html)
+          echo "content snippet: $(echo "$CONTENT" | head -5)"
+          if ! echo "$CONTENT" | grep -q "<h1"; then
+            echo "FAIL: expected <h1 tag in output file"
+            exit 1
+          fi
+          echo "PASS"

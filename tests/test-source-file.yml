@@ -1,0 +1,50 @@
+name: Test markdown source file conversion
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Debug environment
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "PWD: $(pwd)"
+          node --version || true
+      - name: Create source markdown file
+        run: |
+          printf '# My Project\n\nWelcome to **My Project**.\n\n## Features\n\n- Feature one\n- Feature two\n- Feature three\n' > /tmp/test-source-input.md
+          echo "Source file contents:"
+          cat /tmp/test-source-input.md
+      - id: action
+        uses: .
+        with:
+          source: /tmp/test-source-input.md
+          output: /tmp/test-source-output.html
+          title: "My Project Page"
+          description: "A test project page"
+          github-corners: "https://github.com/jaywcjlove/markdown-to-html-cli"
+      - name: Assert output file was created
+        run: |
+          if [ ! -f "/tmp/test-source-output.html" ]; then
+            echo "FAIL: output file /tmp/test-source-output.html was not created"
+            exit 1
+          fi
+          echo "PASS: output file exists"
+      - name: Assert output file contains expected HTML
+        run: |
+          CONTENT=$(cat /tmp/test-source-output.html)
+          echo "content snippet: $(echo "$CONTENT" | head -20)"
+          if ! echo "$CONTENT" | grep -q "<h1"; then
+            echo "FAIL: expected <h1 tag in output file"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert output file contains My Project text
+        run: |
+          CONTENT=$(cat /tmp/test-source-output.html)
+          if ! echo "$CONTENT" | grep -q "My Project"; then
+            echo "FAIL: expected 'My Project' text in output"
+            exit 1
+          fi
+          echo "PASS: My Project text found in output"

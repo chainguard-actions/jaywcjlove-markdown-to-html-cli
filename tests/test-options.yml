@@ -1,0 +1,58 @@
+name: Test action options (title, description, github-corners, dark-mode)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Debug environment
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "PWD: $(pwd)"
+          node --version || true
+      - id: action
+        uses: .
+        with:
+          markdown: |
+            # Options Test
+
+            Testing various options.
+          output: /tmp/test-options-output.html
+          title: "Options Test Page"
+          description: "Testing options"
+          github-corners: "https://github.com/jaywcjlove/markdown-to-html-cli"
+          dark-mode: "true"
+      - name: Assert output file was created
+        run: |
+          if [ ! -f "/tmp/test-options-output.html" ]; then
+            echo "FAIL: output file /tmp/test-options-output.html was not created"
+            exit 1
+          fi
+          echo "PASS: output file exists"
+      - name: Assert github-corners link is in output
+        run: |
+          CONTENT=$(cat /tmp/test-options-output.html)
+          if ! echo "$CONTENT" | grep -q "github.com/jaywcjlove/markdown-to-html-cli"; then
+            echo "FAIL: expected github-corners URL in output"
+            exit 1
+          fi
+          echo "PASS: github-corners URL found"
+      - name: Assert h1 heading is in output
+        run: |
+          CONTENT=$(cat /tmp/test-options-output.html)
+          if ! echo "$CONTENT" | grep -q "<h1"; then
+            echo "FAIL: expected <h1 tag in output"
+            exit 1
+          fi
+          echo "PASS: h1 heading found in output"
+      - name: Assert html output is non-empty
+        env:
+          HTML: ${{ steps.action.outputs.html }}
+        run: |
+          echo "html length: ${#HTML}"
+          if [ -z "$HTML" ]; then
+            echo "FAIL: html output is empty"
+            exit 1
+          fi
+          echo "PASS"
