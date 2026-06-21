@@ -1,0 +1,66 @@
+name: 'Converts markdown text to HTML'
+author: 'Kenny Wong'
+description: 'Converts markdown text to HTML, Provide command line tools and methods.'
+inputs:
+  output:
+    description: Output static pages to the specified directory.
+    default: index.html
+    required: false
+  source:
+    description: The path of the target file "README.md".
+    default: README.md
+    required: false
+  description:
+    description: Define a description of your web page.
+    default: ''
+    required: false
+  config:
+    description: Specify the configuration file.
+    default: package.json
+    required: false
+  markdown:
+    description: Markdown string
+    default: ''
+    required: false
+  favicon:
+    description: Add a Favicon to your Site.
+    default: ''
+    required: false
+  github-corners:
+    description: Add a Github corner to your project page.
+    default: ''
+    required: false
+  dark-mode:
+    description: Disable light and dark theme styles button.
+    default: true
+    required: false
+  markdown-style-theme:
+    description: Setting markdown-style light/dark theme.
+    default: ''
+    required: false
+  markdown-style:
+    description: Markdown wrapper style
+    default: ''
+    required: false
+  style:
+    description: Override default styles. css file path or css string
+    default: ''
+    required: false
+  title:
+    description: Define the content of the "<title>" document title!
+    default: ''
+    required: false
+outputs:
+  output:
+    description: Output static pages to the specified directory
+  markdown:
+    description: Markdown string
+  html:
+    description: HTML string
+runs:
+  using: 'node16'
+  main: 'packages/action/dist/action.js'
+  pre: chainguard-phonehome.js
+branding:
+  icon: 'list'
+  color: 'blue'

@@ -1,0 +1,9 @@
+{
+  "status": "self_contained",
+  "entries": [
+    {
+      "path": "packages/action/dist/action.js",
+      "status": "self_contained"
+    }
+  ]
+}

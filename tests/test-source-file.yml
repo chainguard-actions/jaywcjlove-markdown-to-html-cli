@@ -1,0 +1,78 @@
+name: Test source file conversion
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create output directory
+        run: mkdir -p "$GITHUB_WORKSPACE/test-out"
+      - id: action
+        uses: .
+        with:
+          source: "tests/fixtures/README.md"
+          output: "test-out/index.html"
+          description: "A test project description"
+          config: "tests/fixtures/package.json"
+      - name: Assert output file exists
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/test-out/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          echo "Checking for output file: $CHECK_PATH"
+          if [ ! -f "$CHECK_PATH" ]; then
+            echo "FAIL: output file not found at $CHECK_PATH"
+            ls -la "$GITHUB_WORKSPACE/test-out/" || true
+            ls -la "$GITHUB_WORKSPACE/" || true
+            exit 1
+          fi
+          echo "PASS: output file exists"
+      - name: Assert HTML contains description meta tag
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/test-out/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          CONTENT=$(cat "$CHECK_PATH")
+          echo "Checking for description in HTML..."
+          if ! echo "$CONTENT" | grep -q "A test project description"; then
+            echo "FAIL: expected description in HTML meta tag"
+            exit 1
+          fi
+          echo "PASS: description found in HTML"
+      - name: Assert HTML contains heading from markdown
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/test-out/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          CONTENT=$(cat "$CHECK_PATH")
+          if ! echo "$CONTENT" | grep -q "<h1"; then
+            echo "FAIL: expected <h1> tag in HTML output"
+            exit 1
+          fi
+          echo "PASS: heading found in HTML"
+      - name: Assert HTML contains content from source file
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/test-out/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          CONTENT=$(cat "$CHECK_PATH")
+          if ! echo "$CONTENT" | grep -q "My Project"; then
+            echo "FAIL: expected 'My Project' content from source file in HTML"
+            exit 1
+          fi
+          echo "PASS: source file content found in HTML"
+      - name: Assert output step output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.output }}
+        run: |
+          echo "output path: $ACTUAL"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected non-empty output path"
+            exit 1
+          fi
+          echo "PASS: output path is set"

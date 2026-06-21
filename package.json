@@ -1,0 +1,68 @@
+{
+  "private": true,
+  "name": "markdown-to-html-cli-title-test",
+  "description": "Converts markdown text to HTML.",
+  "scripts": {
+    "prepare": "husky install",
+    "package": "npm run build && lerna exec \"ncc build src/action.ts -o dist\" --scope action",
+    "start": "node packages/cli/lib/cli.js --github-corners-fork --github-corners 'https://jaywcjlove.github.io' --style='body { margin: 0; }'",
+    "watch": "lerna exec \"tsbb watch src/*.ts\" --scope markdown-to-html-cli",
+    "build": "lerna exec \"tsbb build src/*.ts\" --scope markdown-to-html-cli",
+    "test": "tsbb test",
+    "coverage": "tsbb test --coverage --bail",
+    "version": "lerna version --no-changelog --no-git-tag-version --no-push",
+    "prettier": "prettier --write \"**/*.{js,jsx,tsx,ts,less,md,json}\"",
+    "updated": "lerna updated",
+    "remove": "lerna exec \"rm -rf node_modules build package-lock.json\"",
+    "clean": "lerna clean --yes && npm run remove"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jaywcjlove/markdown-to-html-cli.git"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "lint-staged": {
+    "packages/action/src/**/*.ts?(x)": [
+      "npm run package"
+    ],
+    "packages/cli/src/**/*.ts?(x)": [
+      "npm run package"
+    ]
+  },
+  "jest": {
+    "extensionsToTreatAsEsm": [".ts"],
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "collectCoverageFrom": [
+      "<rootDir>/packages/cli/**/*.{tsx,ts}"
+    ],
+    "coverageReporters": [
+      "lcov",
+      "json-summary"
+    ],
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/?!(.*)"
+    ]
+  },
+  "markdown-to-html": {
+    "reurls": {
+      "README-zh.md": "index.zh.html",
+      "README.md": "index.html"
+    }
+  },
+  "workspaces": [
+    "packages/**"
+  ],
+  "devDependencies": {
+    "@kkt/ncc": "^1.1.1",
+    "ajv": "^8.8.0",
+    "husky": "^8.0.1",
+    "lerna": "^7.3.0",
+    "lint-staged": "^14.0.1",
+    "prettier": "^3.0.0",
+    "tsbb": "^4.2.3"
+  }
+}

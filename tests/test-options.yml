@@ -1,0 +1,71 @@
+name: Test optional inputs (dark-mode, github-corners, title)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create output directory
+        run: mkdir -p "$GITHUB_WORKSPACE/options-out"
+      - id: action
+        uses: .
+        with:
+          markdown: |
+            # Options Test
+
+            Testing optional inputs.
+          output: "options-out/index.html"
+          title: "Options Test Page"
+          github-corners: "https://github.com/jaywcjlove/markdown-to-html-cli"
+          dark-mode: "true"
+          config: "tests/fixtures/package.json"
+      - name: Assert output file exists
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/options-out/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          echo "Checking for output file: $CHECK_PATH"
+          if [ ! -f "$CHECK_PATH" ]; then
+            echo "FAIL: output file not found at $CHECK_PATH"
+            ls -la "$GITHUB_WORKSPACE/options-out/" || true
+            ls -la "$GITHUB_WORKSPACE/" || true
+            exit 1
+          fi
+          echo "PASS: output file exists"
+      - name: Assert HTML contains github-corners link
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/options-out/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          CONTENT=$(cat "$CHECK_PATH")
+          echo "Checking for github-corners link..."
+          if ! echo "$CONTENT" | grep -q "github.com/jaywcjlove/markdown-to-html-cli"; then
+            echo "FAIL: expected github-corners URL in HTML"
+            exit 1
+          fi
+          echo "PASS: github-corners link found"
+      - name: Assert HTML contains heading from markdown
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/options-out/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          CONTENT=$(cat "$CHECK_PATH")
+          if ! echo "$CONTENT" | grep -q "<h1"; then
+            echo "FAIL: expected <h1> tag in HTML output"
+            exit 1
+          fi
+          echo "PASS: HTML contains heading"
+      - name: Assert markdown step output is set
+        env:
+          ACTUAL: ${{ steps.action.outputs.markdown }}
+        run: |
+          echo "markdown output length: ${#ACTUAL}"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected non-empty markdown output"
+            exit 1
+          fi
+          echo "PASS: markdown output is set"

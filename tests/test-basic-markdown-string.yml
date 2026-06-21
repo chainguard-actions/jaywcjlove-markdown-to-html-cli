@@ -1,0 +1,70 @@
+name: Test basic markdown string conversion
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create output directory
+        run: mkdir -p "$GITHUB_WORKSPACE/test-output"
+      - id: action
+        uses: .
+        with:
+          markdown: |
+            # Hello World
+
+            This is a **test**.
+          output: "test-output/index.html"
+          config: "tests/fixtures/package.json"
+      - name: Assert output file exists
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          echo "Output path from step output: $OUTPUT_PATH"
+          FALLBACK="$GITHUB_WORKSPACE/test-output/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          echo "Checking for output file: $CHECK_PATH"
+          if [ ! -f "$CHECK_PATH" ]; then
+            echo "FAIL: output file not found at $CHECK_PATH"
+            ls -la "$GITHUB_WORKSPACE/test-output/" || true
+            ls -la "$GITHUB_WORKSPACE/" || true
+            exit 1
+          fi
+          echo "PASS: output file exists"
+      - name: Assert HTML output contains heading
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/test-output/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          CONTENT=$(cat "$CHECK_PATH")
+          echo "HTML content (first 500 chars):"
+          echo "$CONTENT" | head -c 500
+          if ! echo "$CONTENT" | grep -q "<h1"; then
+            echo "FAIL: expected <h1> tag in HTML output"
+            exit 1
+          fi
+          echo "PASS: HTML contains heading"
+      - name: Assert HTML output contains bold text
+        env:
+          OUTPUT_PATH: ${{ steps.action.outputs.output }}
+        run: |
+          FALLBACK="$GITHUB_WORKSPACE/test-output/index.html"
+          CHECK_PATH="${OUTPUT_PATH:-$FALLBACK}"
+          CONTENT=$(cat "$CHECK_PATH")
+          if ! echo "$CONTENT" | grep -q "<strong>"; then
+            echo "FAIL: expected <strong> tag in HTML output"
+            exit 1
+          fi
+          echo "PASS: HTML contains bold text"
+      - name: Assert html step output is non-empty
+        env:
+          ACTUAL: ${{ steps.action.outputs.html }}
+        run: |
+          echo "html output length: ${#ACTUAL}"
+          if [ -z "$ACTUAL" ]; then
+            echo "FAIL: expected non-empty html output"
+            exit 1
+          fi
+          echo "PASS: html output is non-empty"
