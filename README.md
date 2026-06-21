@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v5.0.3 | [`v5.0.3`](https://github.com/chainguard-actions/jaywcjlove-markdown-to-html-cli/tree/v5.0.3) | [`d2c8ffd`](https://github.com/jaywcjlove/markdown-to-html-cli/commit/d2c8ffd676de1801e2586904bc540a938e4bc480) |
+| v5.0.4 | [`v5.0.4`](https://github.com/chainguard-actions/jaywcjlove-markdown-to-html-cli/tree/v5.0.4) | [`cff9330`](https://github.com/jaywcjlove/markdown-to-html-cli/commit/cff9330af4ca8048b197a76d9eb1db189c2a7cee) |
 
 ## Privacy
 
